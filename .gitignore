@@ -1,0 +1,31 @@
+# 缓存与构建
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# 备份产物
+*.tar.gz
+*.tar.bz2
+*.zip
+
+# 本地环境
+.env
+.DS_Store
+
+# 隐私保险：即使误复制也不入库
+.memory/
+.ssh/
+.gnupg/
+*.key
+*.pem
+*.id_rsa
+*.id_ed25519
+
+# 记忆与身份文件（示例仓库不携带真实内容）
+memory/
+SOUL.md
+USER.md
+IDENTITY.md
+MEMORY.md
+HEARTBEAT.md
