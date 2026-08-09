@@ -130,7 +130,8 @@ def main():
     results = []
     for label in selected:
         local = Path(DEFAULT_PATHS[label]) if label in DEFAULT_PATHS else Path(label)
-        remote_target = f"{user}@{host}:{remote_base}/{label}"
+        # 远程用本地目录的实际名字（如 .memory / .opencode），不用中文标签
+        remote_target = f"{user}@{host}:{remote_base}/{local.name}"
         print(f"==> [{label}] {'推送' if direction == 'push' else '拉取'}")
         results.append(rsync_one(local, remote_target, direction, port, dry=False))
 
