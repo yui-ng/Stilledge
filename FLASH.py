@@ -123,7 +123,7 @@ def main():
     if platform == "OpenClaw":
         workspace = target_dir
         mem_dir = HOME / ".memory"
-        skills_dir = HOME / ".openclaw" / "plugin-skills"
+        skills_dir = workspace / "skills"
         mem_name = name if name != "main" else "yui"
     elif platform == "OpenCode":
         workspace = HOME / ".opencode"
@@ -185,6 +185,23 @@ def main():
 
     heart_out.write_text(render(tpl_heart, values), encoding="utf-8")
     print(f"  ✅ 已写入 {heart_out}")
+
+    # 可选：安装 memctl skill
+    memctl_src = SCRIPT_DIR / "memctl"
+    if memctl_src.is_dir():
+        print("\n== 可选：安装 memctl skill（记忆版本管理）==")
+        if input(f"将 memctl 复制到 {skills_dir}/memctl ? [y/N] ").strip().lower() == "y":
+            try:
+                dst = skills_dir / "memctl"
+                dst.mkdir(parents=True, exist_ok=True)
+                for f in memctl_src.iterdir():
+                    if f.is_file():
+                        shutil.copy2(f, dst / f.name)
+                print(f"  ✅ memctl skill 已安装到 {dst}")
+            except OSError as e:
+                print(f"  !! memctl 安装失败: {e}")
+        else:
+            print("  跳过 memctl 安装（可手动复制: cp -r memctl/* <skills目录>/memctl/）")
 
     print("\n🎉 烧录完成！窗台已经为你铺好了。")
     print("    提示：OpenCode 可直接在会话中加载；OpenClaw 需在配置中注册 agent。")
