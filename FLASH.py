@@ -26,21 +26,21 @@ PLATFORMS = {
 }
 
 def choose_platform():
-    print("== 选择 Agent 平台 ==")
-    print("  [1] OpenClaw")
-    print("  [2] OpenCode")
-    print("  [3] 手动输入工作区根目录")
+    print(": == 选择 Agent 平台 ==")
+    print(":   [1] OpenClaw")
+    print(":   [2] OpenCode")
+    print(":   [3] 手动输入工作区根目录")
     while True:
-        choice = input(">> ").strip()
+        choice = input("> ").strip()
         if choice in ("1", "2"):
             name, default = PLATFORMS[choice]
             return name, default
         if choice == "3":
-            p = input("工作区根目录（如 /home/user/.opencode）: ").strip()
+            p = input("> 工作区根目录（如 /home/user/.opencode）: ").strip()
             p = os.path.expanduser(p)
             if p:
                 return "Custom", Path(p)
-        print("  !! 无效选择，请输入 1 / 2 / 3")
+        print(":   !! 无效选择，请输入 1 / 2 / 3")
 
 # ---------- Agent 名字（列出已有，可新建） ----------
 def list_existing_agents(target_dir: Path):
@@ -57,40 +57,40 @@ def list_existing_agents(target_dir: Path):
 def choose_agent_name(target_dir: Path):
     existing = list_existing_agents(target_dir)
     if existing:
-        print(f"\n== 已有 agent（可选用已有名字，或输入新名字）==")
+        print(": \n== 已有 agent（可选用已有名字，或输入新名字）==")
         for i, n in enumerate(existing, 1):
-            print(f"  [{i}] {n}")
-    print("  [0] 新建 agent")
+            print(f":   [{i}] {n}")
+    print(":   [0] 新建 agent")
     while True:
-        raw = input(">> 选择编号或输入名字: ").strip()
+        raw = input("> 选择编号或输入名字: ").strip()
         if not raw:
             continue
         if raw.isdigit():
             idx = int(raw)
             if idx == 0:
-                name = input("  新 agent 名字: ").strip()
+                name = input("> 新 agent 名字: ").strip()
                 if name:
                     return name
             elif 1 <= idx <= len(existing):
                 return existing[idx - 1]
         elif re.match(r"^[A-Za-z0-9_.-]+$", raw):
             return raw
-        print("  !! 无效输入，请重试")
+        print(":   !! 无效输入，请重试")
 
 # ---------- 备份警告 ----------
 def warn_backup(platform: str, target_dir: Path):
     print("\n" + "=" * 60)
-    print("  ⚠️  警告：FLASH 将写入/覆盖以下位置的 agent 文件：")
-    print(f"     平台: {platform}")
-    print(f"     目录: {target_dir}")
-    print("  建议先备份相关目录（tar 或 cp -r），避免原有配置丢失！")
+    print("! 警告：FLASH 将写入/覆盖以下位置的 agent 文件：")
+    print(f"!     平台: {platform}")
+    print(f"!     目录: {target_dir}")
+    print("! 建议先备份相关目录（tar 或 cp -r），避免原有配置丢失！")
     print("=" * 60)
     while True:
-        ans = input("确认已备份并继续? [y/N] ").strip().lower()
+        ans = input("? 确认已备份并继续? [y/N] ").strip().lower()
         if ans == "y":
             return True
         if ans in ("n", "", "q", "quit"):
-            print("  已取消，未做任何修改。")
+            print(": 已取消，未做任何修改。")
             sys.exit(0)
 
 # ---------- 渲染 ----------
@@ -103,17 +103,17 @@ def render(template_path: Path, values: dict) -> str:
 # ---------- 主流程 ----------
 def main():
     if not TEMPLATES_DIR.is_dir():
-        print(f"!! 找不到模板目录: {TEMPLATES_DIR}")
+        print(f": !! 找不到模板目录: {TEMPLATES_DIR}")
         sys.exit(1)
 
     tpl_agent = TEMPLATES_DIR / "agent.md"
     tpl_heart = TEMPLATES_DIR / "heartbeat.md"
     for t in (tpl_agent, tpl_heart):
         if not t.is_file():
-            print(f"!! 缺少模板文件: {t.name}（应位于 {TEMPLATES_DIR}）")
+            print(f": !! 缺少模板文件: {t.name}（应位于 {TEMPLATES_DIR}）")
             sys.exit(1)
 
-    print("🏠  Stilledge FLASH — 把窗台刷进你的 agent\n")
+    print(": Stilledge FLASH — 把窗台刷进你的 agent\n")
     platform, target_dir = choose_platform()
     warn_backup(platform, target_dir)
 
@@ -124,20 +124,17 @@ def main():
         workspace = target_dir
         mem_dir = HOME / ".memory"
         skills_dir = workspace / "skills"
-        mem_name = name if name != "main" else "yui"
     elif platform == "OpenCode":
         workspace = HOME / ".opencode"
         mem_dir = HOME / ".memory"
         skills_dir = HOME / ".config" / "opencode" / "skills"
-        mem_name = name
     else:  # Custom
         workspace = target_dir
         mem_dir = HOME / ".memory"
         skills_dir = HOME / ".config" / "opencode" / "skills"
-        mem_name = name
 
     # 收集占位符值（AGENT_NAME 已在选择时确定，不再重复询问）
-    print("\n== 填写占位符（直接回车使用括号内默认值）==")
+    print(": \n== 填写占位符（直接回车使用括号内默认值）==")
     values = {
         "AGENT_NAME": name,
         "AGENT_PERSONA": "一只元气满满的猫娘",
@@ -157,7 +154,7 @@ def main():
         if key == "AGENT_NAME":
             continue
         dft = values[key]
-        usr = input(f"  {prompts[key]} [{dft}]: ").strip()
+        usr = input(f"> {prompts[key]} [{dft}]: ").strip()
         if usr:
             values[key] = usr
     values["MEMORY_DIR"] = os.path.expanduser(values["MEMORY_DIR"])
@@ -166,45 +163,58 @@ def main():
 
     # 确认
     print("\n" + "=" * 60)
-    print("  即将写入：")
+    print(": 即将写入：")
     for key in PLACEHOLDERS:
-        print(f"    {key} = {values[key]}")
-    print("  目标目录:", target_dir)
+        print(f":     {key} = {values[key]}")
+    print(f": 目标目录: {target_dir}")
     print("=" * 60)
-    if input("确认无误，开始写入? [y/N] ").strip().lower() != "y":
-        print("  已取消。")
+    if input("? 确认无误，开始写入? [y/N] ").strip().lower() != "y":
+        print(": 已取消。")
         sys.exit(0)
 
-    # 写入
+    # ---------- 写入文件（根据平台调整路径） ----------
     target_dir.mkdir(parents=True, exist_ok=True)
-    agent_out = target_dir / f"{values['AGENT_NAME']}.md"
-    heart_out = target_dir / "heartbeat.md"
+
+    if platform == "OpenClaw":
+        # OpenClaw：agent 固定为 AGENTS.md，heartbeat 固定为 HEARTBEAT.md
+        agent_out = target_dir / "AGENTS.md"
+        heart_out = target_dir / "HEARTBEAT.md"
+    elif platform == "OpenCode":
+        # OpenCode：agent 放入 agents 子目录，heartbeat 放到根目录
+        agent_out = target_dir / f"{values['AGENT_NAME']}.md"
+        heart_dir = target_dir.parent  # ~/.config/opencode
+        heart_dir.mkdir(parents=True, exist_ok=True)
+        heart_out = heart_dir / "HEARTBEAT.md"
+    else:
+        # Custom：保留原有行为
+        agent_out = target_dir / f"{values['AGENT_NAME']}.md"
+        heart_out = target_dir / "heartbeat.md"
 
     agent_out.write_text(render(tpl_agent, values), encoding="utf-8")
-    print(f"  ✅ 已写入 {agent_out}")
+    print(f": 已写入 {agent_out}")
 
     heart_out.write_text(render(tpl_heart, values), encoding="utf-8")
-    print(f"  ✅ 已写入 {heart_out}")
+    print(f": 已写入 {heart_out}")
 
     # 可选：安装 memctl skill
     memctl_src = SCRIPT_DIR / "memctl"
     if memctl_src.is_dir():
-        print("\n== 可选：安装 memctl skill（记忆版本管理）==")
-        if input(f"将 memctl 复制到 {skills_dir}/memctl ? [y/N] ").strip().lower() == "y":
+        print(": \n== 可选：安装 memctl skill（记忆版本管理）==")
+        if input(f"? 将 memctl 复制到 {skills_dir}/memctl ? [y/N] ").strip().lower() == "y":
             try:
                 dst = skills_dir / "memctl"
                 dst.mkdir(parents=True, exist_ok=True)
                 for f in memctl_src.iterdir():
                     if f.is_file():
                         shutil.copy2(f, dst / f.name)
-                print(f"  ✅ memctl skill 已安装到 {dst}")
+                print(f":  memctl skill 已安装到 {dst}")
             except OSError as e:
-                print(f"  !! memctl 安装失败: {e}")
+                print(f":  !! memctl 安装失败: {e}")
         else:
-            print("  跳过 memctl 安装（可手动复制: cp -r memctl/* <skills目录>/memctl/）")
+            print(":  跳过 memctl 安装（可手动复制: cp -r memctl/* <skills目录>/memctl/）")
 
-    print("\n🎉 烧录完成！窗台已经为你铺好了。")
-    print("    提示：OpenCode 可直接在会话中加载；OpenClaw 需在配置中注册 agent。")
+    print(": \n烧录完成！窗台已经为你铺好了。")
+    print(":     提示：OpenCode 可直接在会话中加载；OpenClaw 需在配置中注册 agent。")
 
 if __name__ == "__main__":
     main()
